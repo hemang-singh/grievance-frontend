@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { API } from "../config";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+
   const [title, setTitle] = useState("");
   const [search, setSearch] = useState("");
   const [list, setList] = useState([]);
@@ -10,13 +13,12 @@ export default function Dashboard() {
 
   const token = localStorage.getItem("token");
 
-  // 🚪 Logout
+  // FIXED LOGOUT
   const logout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/";
+    navigate("/");
   };
 
-  // 📥 Get all grievances
   const fetchData = async () => {
     try {
       const res = await axios.get(`${API}/grievances`, {
@@ -28,7 +30,6 @@ export default function Dashboard() {
     }
   };
 
-  // ➕ Add grievance
   const addGrievance = async () => {
     await axios.post(
       `${API}/grievances`,
@@ -44,13 +45,11 @@ export default function Dashboard() {
     fetchData();
   };
 
-  // ✏️ Start edit
   const startEdit = (g) => {
     setEditId(g._id);
     setTitle(g.title);
   };
 
-  // ✅ Update grievance
   const updateGrievance = async () => {
     await axios.put(
       `${API}/grievances/${editId}`,
@@ -63,7 +62,6 @@ export default function Dashboard() {
     fetchData();
   };
 
-  // 🗑️ Delete grievance
   const deleteGrievance = async (id) => {
     await axios.delete(`${API}/grievances/${id}`, {
       headers: { Authorization: token }
@@ -72,14 +70,13 @@ export default function Dashboard() {
     fetchData();
   };
 
-  // 🔍 SEARCH FIXED (IMPORTANT)
   const searchGrievance = async () => {
-    try {
-      if (!search.trim()) {
-        fetchData();
-        return;
-      }
+    if (!search.trim()) {
+      fetchData();
+      return;
+    }
 
+    try {
       const res = await axios.get(
         `${API}/grievances/search?title=${search}`,
         { headers: { Authorization: token } }
@@ -87,7 +84,6 @@ export default function Dashboard() {
 
       setList(res.data);
     } catch (err) {
-      console.log("Search error");
       setList([]);
     }
   };
@@ -99,7 +95,6 @@ export default function Dashboard() {
   return (
     <div className="dashboard-container">
 
-      {/* HEADER */}
       <div className="header">
         <h2>🎓 Student Grievance System</h2>
 
@@ -108,9 +103,7 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* ADD / UPDATE */}
       <div className="card-box">
-
         <input
           className="input"
           placeholder="Enter grievance title"
@@ -129,9 +122,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* SEARCH */}
       <div className="search-box">
-
         <input
           className="input"
           placeholder="Search grievance..."
@@ -148,22 +139,18 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* LIST */}
       <div className="list">
-
         {list.length === 0 ? (
           <p className="empty">No grievances found</p>
         ) : (
           list.map((g) => (
             <div className="item" key={g._id}>
-
               <div>
                 <h4>{g.title}</h4>
                 <p>Status: {g.status || "Pending"}</p>
               </div>
 
               <div className="actions">
-
                 <button className="edit" onClick={() => startEdit(g)}>
                   Edit
                 </button>
@@ -174,13 +161,10 @@ export default function Dashboard() {
                 >
                   Delete
                 </button>
-
               </div>
-
             </div>
           ))
         )}
-
       </div>
 
     </div>
